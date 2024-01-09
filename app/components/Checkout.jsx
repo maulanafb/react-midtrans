@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { product } from "../libs/product";
 
 const Checkout = () => {
   const [quantity, setQuantity] = useState(1);
 
   const decreaseQuantity = () => {
-    setQuantity((prevState) => (quantity > 1 ? prevState - 1 : null));
+    setQuantity((prevState) => (quantity > 1 ? prevState - 1 : 1));
   };
 
   const increaseQuantity = () => {
@@ -12,11 +13,33 @@ const Checkout = () => {
   };
 
   const checkout = async () => {
-    alert("Checkout SNAP! 🌟")
+    const data = {
+      id: product.id,
+      productName: product.name,
+      price: product.price,
+      quantity: quantity,
+    };
+
+    try {
+      const response = await fetch("/api/tokenizer", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const requestData = await response.json();
+      window.snap.pay(requestData.token)
+    } catch (error) {
+      console.error("Error during checkout:", error.message);
+    }
   };
 
+
   const generatePaymentLink = async () => {
-    alert("Checkout Payment Link! 🔥")
+    alert("Tautan Pembayaran Checkout! 🔥");
   };
 
   return (
@@ -35,7 +58,7 @@ const Checkout = () => {
             id="quantity"
             value={quantity}
             className="h-10 w-16 text-black border-transparent text-center"
-            onChange={quantity}
+            onChange={(e) => setQuantity(Number(e.target.value))}
           />
 
           <button
@@ -56,7 +79,7 @@ const Checkout = () => {
         className="text-indigo-500 py-4 text-sm font-medium transition hover:scale-105"
         onClick={generatePaymentLink}
       >
-        Create Payment Link
+        Buat Tautan Pembayaran
       </button>
     </>
   );
